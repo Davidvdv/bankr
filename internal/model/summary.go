@@ -22,7 +22,7 @@ func BuildSummary(transactions []*Transaction) *Summary {
 		TotalAmountSpent: sum(transactions),
 		TotalAmountReceived: func () float64 {
 			debitTransactions := make([]*Transaction, 0, len(transactions))
-			for _, t := range debitTransactions {
+			for _, t := range transactions {
 				if t.Amount > 0 {
 					debitTransactions = append(debitTransactions, t)
 				}

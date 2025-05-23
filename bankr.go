@@ -1,28 +1,32 @@
 package main
 
 import (
-	"bankr/model"
-	"encoding/csv"
+	"bankr/internal/model"
 	"encoding/json"
 	"fmt"
-	"io"
+	"bankr/internal/io"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 const CSV_FILE_EXTENSION = ".csv"
-const DEFAULT_DIR = "csv"
+const DEFAULT_DIR = "resources"
 
 type Application interface {
 	Go()
 }
 
 type BankrCli struct {
+	resourcesDir string
+	csvFileReader io.FileReader
 }
 
 func ApplicationFactory() Application {
-	app := &BankrCli{}
+	app := &BankrCli{
+		resourcesDir: DEFAULT_DIR,
+		csvFileReader: &io.CsvFileReader{},
+	}
 	return app
 }
 
@@ -32,31 +36,21 @@ func (a *BankrCli) Go() {
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	fmt.Printf("Found %d CSV files\n", len(filepaths))
-	for _, filePath := range filepaths {
-		fmt.Println(filePath)
-	}
+	printFileDetails(filepaths)
 
-	readAllCsvFiles(filepaths)
-}
-
-func readAllCsvFiles(filepaths []string) {
-	ch := make(chan [][]string, len(filepaths))
-
-	for _, filePath := range filepaths {
-		go readFile(filePath, ch)
-	}
-
-	var allEntries [][]string
-	for range filepaths {
-		entries := <-ch
-		allEntries = append(allEntries, entries...)
-	}
+	allEntries := a.csvFileReader.ReadEntriesOfFiles(filepaths)
 
 	transactions := model.BuildTransactions(allEntries)
 	summary := model.BuildSummary(transactions)
 	jsonSummary, _ := json.MarshalIndent(summary, "", "  ")
 	fmt.Printf("Summary:\n%s\n", string(jsonSummary))
+}
+
+func printFileDetails(filepaths []string) {
+	fmt.Printf("Found %d CSV files\n", len(filepaths))
+	for _, filePath := range filepaths {
+		fmt.Println(filePath)
+	}
 }
 
 func allCsvFilesInDir(dirPath string) ([]string, error) {
@@ -78,35 +72,4 @@ func allCsvFilesInDir(dirPath string) ([]string, error) {
 	}
 
 	return filePaths, nil
-}
-
-func readFile(filePath string, ch chan [][]string) {
-	fmt.Printf("Reading file %s\n", filePath)
-	csvFile, err := os.Open(filePath)
-	if err != nil {
-		fmt.Printf("could not open file %s: %v\n", filePath, err)
-		ch <- make([][]string, 0)
-		return
-	}
-	defer csvFile.Close()
-
-	reader := csv.NewReader(csvFile)
-	_, _ = reader.Read() // Skip the header row
-
-	var lines [][]string
-	for {
-		line, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			fmt.Printf("could not read CSV: %v", err)
-			ch <- lines
-			return
-		}
-		lines = append(lines, line)
-	}
-
-	fmt.Printf("Successfully read %d lines from CSV\n", len(lines))
-	ch <- lines
 }
