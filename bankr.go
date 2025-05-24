@@ -1,36 +1,41 @@
 package main
 
 import (
-	"bankr/internal/model"
-	"encoding/json"
-	"fmt"
+	"bankr/internal"
 	"bankr/internal/io"
+	"bankr/internal/model"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/fatih/color"
 )
 
 const CSV_FILE_EXTENSION = ".csv"
-const DEFAULT_DIR = "resources"
+const DEFAULT_DIR = "internal/resources"
 
 type Application interface {
 	Go()
 }
 
 type BankrCli struct {
-	resourcesDir string
-	csvFileReader io.FileReader
+	resourcesDir         string
+	csvFileReader        io.FileReader
+	transactionProcessor internal.Processor
 }
 
 func ApplicationFactory() Application {
 	app := &BankrCli{
-		resourcesDir: DEFAULT_DIR,
-		csvFileReader: &io.CsvFileReader{},
+		resourcesDir:         DEFAULT_DIR,
+		csvFileReader:        &io.CsvFileReader{},
+		transactionProcessor: &internal.TransactionProcessor{},
 	}
 	return app
 }
-
 func (a *BankrCli) Go() {
+	c := color.New(color.FgYellow, color.Bold)
+	c.Print("### Bankr CLI! ###\n\n")
+	
 	filepaths, err := allCsvFilesInDir(DEFAULT_DIR)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -41,16 +46,9 @@ func (a *BankrCli) Go() {
 	allEntries := a.csvFileReader.ReadEntriesOfFiles(filepaths)
 
 	transactions := model.BuildTransactions(allEntries)
-	summary := model.BuildSummary(transactions)
-	jsonSummary, _ := json.MarshalIndent(summary, "", "  ")
-	fmt.Printf("Summary:\n%s\n", string(jsonSummary))
-}
+	printSummary(transactions, len(filepaths))
 
-func printFileDetails(filepaths []string) {
-	fmt.Printf("Found %d CSV files\n", len(filepaths))
-	for _, filePath := range filepaths {
-		fmt.Println(filePath)
-	}
+	a.transactionProcessor.Process(transactions)
 }
 
 func allCsvFilesInDir(dirPath string) ([]string, error) {
@@ -72,4 +70,16 @@ func allCsvFilesInDir(dirPath string) ([]string, error) {
 	}
 
 	return filePaths, nil
+}
+
+func printFileDetails(filepaths []string) {
+	fmt.Printf("=> Found %d CSV files\n", len(filepaths))
+	for _, filePath := range filepaths {
+		fmt.Println(filePath)
+	}
+}
+
+func printSummary(transactions []*model.Transaction, numberOfAccounts int) {
+	summary := model.BuildSummary(transactions, numberOfAccounts)
+	fmt.Printf("Summary:\n%s\n", internal.PrettyJson(summary))
 }

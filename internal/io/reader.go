@@ -30,7 +30,7 @@ func (c *CsvFileReader) ReadEntriesOfFiles(filePaths []string) [][]string {
 }
 
 func readFile(filePath string, ch chan [][]string) {
-	fmt.Printf("Reading file %s\n", filePath)
+	fmt.Printf("=> Reading file %s\n", filePath)
 	csvFile, err := os.Open(filePath)
 	if err != nil {
 		fmt.Printf("could not open file %s: %v\n", filePath, err)
@@ -56,7 +56,7 @@ func readFile(filePath string, ch chan [][]string) {
 		lines = append(lines, line)
 	}
 
-	fmt.Printf("Successfully read %d lines from CSV\n", len(lines))
+	fmt.Printf("=> Successfully read %d lines from CSV\n", len(lines))
 
 	ch <- lines
 }
