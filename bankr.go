@@ -5,50 +5,50 @@ import (
 	"bankr/internal/io"
 	"bankr/internal/model"
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/fatih/color"
 )
 
-const CSV_FILE_EXTENSION = ".csv"
-const DEFAULT_DIR = "internal/resources"
+const csvFileExtension = ".csv"
+const defaultDir = "internal/resources"
 
 type Application interface {
 	Go()
 }
 
-type BankrCli struct {
+type BankrApp struct {
 	resourcesDir         string
 	csvFileReader        io.FileReader
 	transactionProcessor internal.Processor
 }
 
 func ApplicationFactory() Application {
-	app := &BankrCli{
-		resourcesDir:         DEFAULT_DIR,
+	app := &BankrApp{
+		resourcesDir:         defaultDir,
 		csvFileReader:        &io.CsvFileReader{},
 		transactionProcessor: &internal.TransactionProcessor{},
 	}
 	return app
 }
-func (a *BankrCli) Go() {
+func (b *BankrApp) Go() {
 	c := color.New(color.FgYellow, color.Bold)
-	c.Print("### Bankr CLI! ###\n\n")
-	
-	filepaths, err := allCsvFilesInDir(DEFAULT_DIR)
+	_, _ = c.Print("### Bankr CLI! ###\n\n")
+
+	filePaths, err := allCsvFilesInDir(defaultDir)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	printFileDetails(filepaths)
+	printFileDetails(filePaths)
 
-	allEntries := a.csvFileReader.ReadEntriesOfFiles(filepaths)
-
+	allEntries := b.csvFileReader.ReadEntriesOfFiles(filePaths)
 	transactions := model.BuildTransactions(allEntries)
-	printSummary(transactions, len(filepaths))
 
-	a.transactionProcessor.Process(transactions)
+	printSummary(transactions, len(filePaths))
+
+	b.transactionProcessor.Process(transactions)
 }
 
 func allCsvFilesInDir(dirPath string) ([]string, error) {
@@ -62,7 +62,7 @@ func allCsvFilesInDir(dirPath string) ([]string, error) {
 		if file.IsDir() {
 			continue
 		}
-		if !strings.HasSuffix(file.Name(), CSV_FILE_EXTENSION) {
+		if !strings.HasSuffix(file.Name(), csvFileExtension) {
 			continue
 		}
 		filePath := filepath.Join(dirPath, file.Name())

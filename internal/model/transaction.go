@@ -2,12 +2,11 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
-	"fmt"
 )
 
-// Type,Details,Particulars,Code,Reference,Amount,Date,ForeignCurrencyAmount,ConversionCharge
 type Transaction struct {
 	Type                  string
 	Details               string
@@ -40,7 +39,7 @@ func createTransaction(entry []string) (*Transaction, error) {
 }
 
 func BuildTransactions(entries [][]string) []*Transaction {
-		transactions := make([]*Transaction, 0, len(entries))
+	transactions := make([]*Transaction, 0, len(entries))
 	for _, entry := range entries {
 		transaction, err := createTransaction(entry)
 		if err != nil {

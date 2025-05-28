@@ -3,37 +3,29 @@ package model
 import "time"
 
 type Summary struct {
-	NumberOfAccounts			 int
-	TotalAmountSpent    float64
-	TotalAmountReceived float64
+	NumberOfAccounts     int
+	TotalAmountSpent     float64
+	TotalAmountReceived  float64
 	NumberOfTransactions int
-	StartDate time.Time
-	EndDate   time.Time
-}
-
-type Category struct {
-	Name string
-	Amount float64
-	NumberOfTransactions int
-	Transactions []*Transaction
+	StartDate            time.Time
+	EndDate              time.Time
 }
 
 func BuildSummary(transactions []*Transaction, numberOfAccounts int) *Summary {
-	sum := func (transactions []*Transaction) float64 {
-		total := 0.0
-		for _, t := range transactions {
-			total += t.Amount
-		}
-		return total
-	}
 	return &Summary{
-		NumberOfAccounts:     numberOfAccounts,
-		TotalAmountSpent: sum(transactions),
-		TotalAmountReceived: sum(Filter(transactions, func(t *Transaction) bool {
+		NumberOfAccounts: numberOfAccounts,
+		TotalAmountSpent: Sum(Map(Filter(transactions, func(t *Transaction) bool {
+			return t.Amount < 0
+		}), func(t *Transaction) float64 {
+			return t.Amount
+		})),
+		TotalAmountReceived: Sum(Map(Filter(transactions, func(t *Transaction) bool {
 			return t.Amount > 0
+		}), func(t *Transaction) float64 {
+			return t.Amount
 		})),
 		NumberOfTransactions: len(transactions),
-		StartDate: transactions[len(transactions)-1].Date,
-		EndDate: transactions[0].Date,
+		StartDate:            transactions[len(transactions)-1].Date,
+		EndDate:              transactions[0].Date,
 	}
 }

@@ -27,10 +27,10 @@ func Filter[T any](items []T, predicate func(T) bool) []T {
 	return filtered
 }
 
-func Sum[T any](items []T, getValue func(T) float64) float64 {
-	total := 0.0
+func Sum[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~float32 | ~float64](items []T) T {
+	var total T
 	for _, item := range items {
-		total += getValue(item)
+		total += item
 	}
 	return total
 }

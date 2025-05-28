@@ -25,7 +25,6 @@ func (c *CsvFileReader) ReadEntriesOfFiles(filePaths []string) [][]string {
 		entries := <-ch
 		allEntries = append(allEntries, entries...)
 	}
-
 	return allEntries
 }
 
@@ -37,12 +36,14 @@ func readFile(filePath string, ch chan [][]string) {
 		ch <- make([][]string, 0)
 		return
 	}
-	defer csvFile.Close()
+	defer func(csvFile *os.File) {
+		_ = csvFile.Close()
+	}(csvFile)
 
 	reader := csv.NewReader(csvFile)
 	_, _ = reader.Read() // Skip the header row
 
-	var lines [][]string
+	var lines = make([][]string, 0)
 	for {
 		line, err := reader.Read()
 		if err == io.EOF {

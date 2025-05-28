@@ -6,28 +6,27 @@ import (
 )
 
 type Processor interface {
-	Process(transactions []*model.Transaction) error
+	Process(transactions []*model.Transaction)
 }
 
 type TransactionProcessor struct {
 }
 
-func (p *TransactionProcessor) Process(transactions []*model.Transaction) error {
+func (p *TransactionProcessor) Process(transactions []*model.Transaction) {
 	fmt.Println("=> Processing transactions...")
 	transactionsByCategory := model.GroupBy(transactions, func(t *model.Transaction) string {
 		return t.Type
 	})
-	var categorySummary *model.Category
 	for category, transactions := range transactionsByCategory {
-		categorySummary = &model.Category{
+		categorySummary := &model.Category{
 			Name: category,
-			Amount: model.Sum(transactions, func(t *model.Transaction) float64 {
-					return t.Amount
-				}),
-				NumberOfTransactions: len(transactions),
-				//Transactions: transactions,
-			}
+			Type: model.Categories.CategoryByType[category],
+			Amount: model.Sum(model.Map(transactions, func(t *model.Transaction) float64 {
+				return t.Amount
+			})),
+			NumberOfTransactions: len(transactions),
+			//Transactions: transactions,
+		}
 		PrettyPrintJson(categorySummary)
 	}
-	return nil
 }
