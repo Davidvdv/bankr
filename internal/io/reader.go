@@ -5,7 +5,39 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
+
+const csvFileExtension = ".csv"
+
+type DirectoryReader interface {
+	ls(dirPath string) ([]string, error)
+}
+
+type LocalDirectoryReader struct {
+}
+
+func (l *LocalDirectoryReader) ls(dirPath string) ([]string, error) {
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading directory: %v", err)
+	}
+
+	filePaths := make([]string, 0)
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(file.Name(), csvFileExtension) {
+			continue
+		}
+		filePath := filepath.Join(dirPath, file.Name())
+		filePaths = append(filePaths, filePath)
+	}
+
+	return filePaths, nil
+}
 
 type FileReader interface {
 	ReadEntriesOfFiles(filePaths []string) [][]string

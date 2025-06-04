@@ -37,37 +37,18 @@ func (r *CommandRegistry) ListCommands() {
 	}
 }
 
-type SummariseCommand struct {
+type CommandFactory struct {
 }
 
-func (s SummariseCommand) Execute([]string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s SummariseCommand) Description() string {
-	return "Provides a summary of the transactions in the CSV files"
-}
-
-type AnalyzeCommand struct {
-}
-
-func (a AnalyzeCommand) Execute([]string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (a AnalyzeCommand) Description() string {
-	return "Analyzes the type, description and code of the transactions in the CSV files"
-}
-
-type ProcessCommand struct{}
-
-func (p ProcessCommand) Execute([]string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p ProcessCommand) Description() string {
-	return "Process the transactions in the CSV files and generate a summary of the transactions and their categories."
+func (f CommandFactory) CreateCommand(name string) (Command, error) {
+	switch name {
+	case "summarise":
+		return &SummariseCommand{}, nil
+	case "analyze":
+		return &AnalyseCommand{}, nil
+	case "process":
+		return &ProcessCommand{}, nil
+	default:
+		return nil, fmt.Errorf("unknown command name: %s", name)
+	}
 }
