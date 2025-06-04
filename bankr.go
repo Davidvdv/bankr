@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bankr/cmd"
 	"bankr/internal"
+	"bankr/internal/classification"
 	"bankr/internal/io"
 	"bankr/internal/model"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,9 +33,29 @@ func ApplicationFactory() Application {
 	}
 	return app
 }
+
 func (b *BankrApp) Go() {
-	c := color.New(color.FgYellow, color.Bold)
-	_, _ = c.Print("### Bankr CLI! ###\n\n")
+	fmt.Print("### Bankr CLI! ###\n\n")
+
+	registry := cmd.NewCommandRegistry()
+	registry.Register("summarise", &cmd.SummariseCommand{})
+	registry.Register("process", &cmd.ProcessCommand{})
+
+	// Handle command line arguments
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: program <command> [args...]")
+		registry.ListCommands()
+		os.Exit(1)
+	}
+
+	command := os.Args[1]
+	args := os.Args[2:]
+
+	// Execute the command
+	if err := registry.Execute(command, args); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
 
 	filePaths, err := allCsvFilesInDir(defaultDir)
 	if err != nil {
@@ -47,8 +68,12 @@ func (b *BankrApp) Go() {
 	transactions := model.BuildTransactions(allEntries)
 
 	printSummary(transactions, len(filePaths))
-
-	b.transactionProcessor.Process(transactions)
+	descriptions := model.Map(transactions, func(t *model.Transaction) string {
+		return t.Details + t.Code
+	})
+	internal.PrettyPrintJson(descriptions)
+	internal.PrettyPrintJson(classification.AnalyzeDescriptions(descriptions))
+	//b.transactionProcessor.Process(transactions)
 }
 
 func allCsvFilesInDir(dirPath string) ([]string, error) {
@@ -72,9 +97,9 @@ func allCsvFilesInDir(dirPath string) ([]string, error) {
 	return filePaths, nil
 }
 
-func printFileDetails(filepaths []string) {
-	fmt.Printf("=> Found %d CSV files\n", len(filepaths))
-	for _, filePath := range filepaths {
+func printFileDetails(filePaths []string) {
+	fmt.Printf("=> Found %d CSV files\n", len(filePaths))
+	for _, filePath := range filePaths {
 		fmt.Println(filePath)
 	}
 }
