@@ -1,9 +1,13 @@
 package cmd
 
-import "fmt"
+import (
+	"bankr/internal"
+	"bankr/internal/io"
+	"fmt"
+)
 
 type Command interface {
-	Execute(args []string)
+	Execute(args []string) error
 	Description() string
 }
 
@@ -26,7 +30,10 @@ func (r *CommandRegistry) Execute(name string, args []string) error {
 	if !exists {
 		return fmt.Errorf("command '%s' not found", name)
 	}
-	cmd.Execute(args)
+	err := cmd.Execute(args)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -40,14 +47,21 @@ func (r *CommandRegistry) ListCommands() {
 type CommandFactory struct {
 }
 
-func (f CommandFactory) CreateCommand(name string) (Command, error) {
+func (f *CommandFactory) CreateCommand(name string) (Command, error) {
 	switch name {
 	case "summarise":
-		return &SummariseCommand{}, nil
-	case "analyze":
+		return &SummariseCommand{
+			directoryReader: &io.LocalDirectoryReader{},
+			fileReader:      &io.CsvFileReader{},
+		}, nil
+	case "analyse":
 		return &AnalyseCommand{}, nil
 	case "process":
-		return &ProcessCommand{}, nil
+		return &ProcessCommand{
+			directoryReader:      &io.LocalDirectoryReader{},
+			fileReader:           &io.CsvFileReader{},
+			transactionProcessor: &internal.TransactionProcessor{},
+		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command name: %s", name)
 	}
