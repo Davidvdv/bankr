@@ -20,6 +20,7 @@ func (p *ProcessCommand) Execute(args []string) error {
 	}
 	linesOfFiles := p.fileReader.ReadLinesOfFiles(filePaths)
 	transactions := model.BuildTransactions(linesOfFiles)
+
 	p.transactionProcessor.Process(transactions)
 	return nil
 }

@@ -11,25 +11,18 @@ type Application interface {
 }
 
 type BankrApp struct {
-	commandFactory *cmd.CommandFactory
 }
 
 func ApplicationFactory() Application {
-	app := &BankrApp{
-		commandFactory: &cmd.CommandFactory{},
-	}
-	return app
+	return &BankrApp{}
 }
 
 func (b *BankrApp) Go() {
 	fmt.Print("### Bankr CLI! ###\n\n")
 
-	summariseCmd, err := b.commandFactory.CreateCommand("summarise")
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
-	processCmd, err := b.commandFactory.CreateCommand("process")
+	summariseCmd, err := cmd.CreateCommand("summarise")
+	processCmd, err := cmd.CreateCommand("process")
+	analyseCmd, err := cmd.CreateCommand("analyse")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
@@ -38,6 +31,7 @@ func (b *BankrApp) Go() {
 	registry := cmd.NewCommandRegistry()
 	registry.Register("summarise", summariseCmd)
 	registry.Register("process", processCmd)
+	registry.Register("analyse", analyseCmd)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: program <command> [args...]")
@@ -47,25 +41,6 @@ func (b *BankrApp) Go() {
 
 	command := os.Args[1]
 	args := os.Args[2:]
-
-	//filePaths, err := allCsvFilesInDir(defaultDir)
-	//if err != nil {
-	//	fmt.Printf("Error: %v\n", err)
-	//}
-	//
-	//printFileDetails(filePaths)
-	//
-	//allEntries := b.csvFileReader.ReadEntriesOfFiles(filePaths)
-	//transactions := model.BuildTransactions(allEntries)
-	//
-	//printSummary(transactions, len(filePaths))
-	//
-	//descriptions := model.Map(transactions, func(t *model.Transaction) string {
-	//	return t.Details + t.Code
-	//})
-	//internal.PrettyPrintJson(descriptions)
-	//internal.PrettyPrintJson(classification.AnalyzeDescriptions(descriptions))
-	//b.transactionProcessor.Process(transactions)
 
 	if err := registry.Execute(command, args); err != nil {
 		fmt.Printf("Error: %v\n", err)

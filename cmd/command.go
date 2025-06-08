@@ -44,10 +44,7 @@ func (r *CommandRegistry) ListCommands() {
 	}
 }
 
-type CommandFactory struct {
-}
-
-func (f *CommandFactory) CreateCommand(name string) (Command, error) {
+func CreateCommand(name string) (Command, error) {
 	switch name {
 	case "summarise":
 		return &SummariseCommand{
@@ -55,7 +52,9 @@ func (f *CommandFactory) CreateCommand(name string) (Command, error) {
 			fileReader:      &io.CsvFileReader{},
 		}, nil
 	case "analyse":
-		return &AnalyseCommand{}, nil
+		return &AnalyseCommand{
+			directoryReader: &io.LocalDirectoryReader{},
+			fileReader:      &io.CsvFileReader{}}, nil
 	case "process":
 		return &ProcessCommand{
 			directoryReader:      &io.LocalDirectoryReader{},

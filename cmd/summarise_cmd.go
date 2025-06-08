@@ -19,6 +19,7 @@ func (s *SummariseCommand) Execute(args []string) error {
 	}
 	linesOfFiles := s.fileReader.ReadLinesOfFiles(filePaths)
 	transactions := model.BuildTransactions(linesOfFiles)
+
 	printSummary(transactions, len(filePaths))
 	return nil
 }
