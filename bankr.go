@@ -1,85 +1,49 @@
 package main
 
 import (
-	"bankr/internal"
-	"bankr/internal/io"
-	"bankr/internal/model"
+	"bankr/cmd"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
-	"path/filepath"
-	"strings"
 )
-
-const csvFileExtension = ".csv"
-const defaultDir = "internal/resources"
 
 type Application interface {
 	Go()
 }
 
 type BankrApp struct {
-	resourcesDir         string
-	csvFileReader        io.FileReader
-	transactionProcessor internal.Processor
 }
 
 func ApplicationFactory() Application {
-	app := &BankrApp{
-		resourcesDir:         defaultDir,
-		csvFileReader:        &io.CsvFileReader{},
-		transactionProcessor: &internal.TransactionProcessor{},
-	}
-	return app
+	return &BankrApp{}
 }
-func (b *BankrApp) Go() {
-	c := color.New(color.FgYellow, color.Bold)
-	_, _ = c.Print("### Bankr CLI! ###\n\n")
 
-	filePaths, err := allCsvFilesInDir(defaultDir)
+func (b *BankrApp) Go() {
+	fmt.Print("### Bankr CLI! ###\n\n")
+
+	summariseCmd, err := cmd.CreateCommand("summarise")
+	processCmd, err := cmd.CreateCommand("process")
+	analyseCmd, err := cmd.CreateCommand("analyse")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
 	}
 
-	printFileDetails(filePaths)
+	registry := cmd.NewCommandRegistry()
+	registry.Register("summarise", summariseCmd)
+	registry.Register("process", processCmd)
+	registry.Register("analyse", analyseCmd)
 
-	allEntries := b.csvFileReader.ReadEntriesOfFiles(filePaths)
-	transactions := model.BuildTransactions(allEntries)
-
-	printSummary(transactions, len(filePaths))
-
-	b.transactionProcessor.Process(transactions)
-}
-
-func allCsvFilesInDir(dirPath string) ([]string, error) {
-	files, err := os.ReadDir(dirPath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading directory: %v", err)
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: program <command> [args...]")
+		registry.ListCommands()
+		os.Exit(1)
 	}
 
-	filePaths := make([]string, 0)
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if !strings.HasSuffix(file.Name(), csvFileExtension) {
-			continue
-		}
-		filePath := filepath.Join(dirPath, file.Name())
-		filePaths = append(filePaths, filePath)
+	command := os.Args[1]
+	args := os.Args[2:]
+
+	if err := registry.Execute(command, args); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
 	}
-
-	return filePaths, nil
-}
-
-func printFileDetails(filepaths []string) {
-	fmt.Printf("=> Found %d CSV files\n", len(filepaths))
-	for _, filePath := range filepaths {
-		fmt.Println(filePath)
-	}
-}
-
-func printSummary(transactions []*model.Transaction, numberOfAccounts int) {
-	summary := model.BuildSummary(transactions, numberOfAccounts)
-	fmt.Printf("Summary:\n%s\n", internal.PrettyJson(summary))
 }

@@ -1,6 +1,9 @@
 package internal
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func PrettyJson(data any) string {
 	jsonData, _ := json.MarshalIndent(data, "", "  ")
@@ -8,5 +11,5 @@ func PrettyJson(data any) string {
 }
 
 func PrettyPrintJson(data any) {
-	println(PrettyJson(data))
+	fmt.Println(PrettyJson(data))
 }
