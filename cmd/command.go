@@ -54,12 +54,18 @@ func CreateCommand(name string) (Command, error) {
 	case "analyse":
 		return &AnalyseCommand{
 			directoryReader: &io.LocalDirectoryReader{},
-			fileReader:      &io.CsvFileReader{}}, nil
+			fileReader:      &io.CsvFileReader{},
+		}, nil
 	case "process":
 		return &ProcessCommand{
 			directoryReader:      &io.LocalDirectoryReader{},
 			fileReader:           &io.CsvFileReader{},
 			transactionProcessor: &internal.TransactionProcessor{},
+		}, nil
+	case "classify":
+		return &ClassifyCommand{
+			directoryReader: &io.LocalDirectoryReader{},
+			fileReader:      &io.CsvFileReader{},
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command name: %s", name)

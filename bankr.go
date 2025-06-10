@@ -23,6 +23,7 @@ func (b *BankrApp) Go() {
 	summariseCmd, err := cmd.CreateCommand("summarise")
 	processCmd, err := cmd.CreateCommand("process")
 	analyseCmd, err := cmd.CreateCommand("analyse")
+	classifyCmd, err := cmd.CreateCommand("classify")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
@@ -32,6 +33,7 @@ func (b *BankrApp) Go() {
 	registry.Register("summarise", summariseCmd)
 	registry.Register("process", processCmd)
 	registry.Register("analyse", analyseCmd)
+	registry.Register("classify", classifyCmd)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: program <command> [args...]")

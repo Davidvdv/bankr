@@ -14,19 +14,19 @@ type TransactionProcessor struct {
 
 func (p *TransactionProcessor) Process(transactions []*model.Transaction) {
 	fmt.Println("=> Processing transactions...")
-	transactionsByCategory := model.GroupBy(transactions, func(t *model.Transaction) string {
+	groupedTransactions := model.GroupBy(transactions, func(t *model.Transaction) string {
 		return t.Type
 	})
-	for category, transactions := range transactionsByCategory {
-		categorySummary := &model.Category{
-			Name: category,
-			Type: model.Categories.CategoryByType[category],
+	for group, transactions := range groupedTransactions {
+		transactionGroup := &model.TransactionGroup{
+			Name: group,
+			Type: model.TransactionGroupMappings.Map[group],
 			Amount: model.Sum(model.Map(transactions, func(t *model.Transaction) float64 {
 				return t.Amount
 			})),
 			NumberOfTransactions: len(transactions),
 			//Transactions: transactions,
 		}
-		PrettyPrintJson(categorySummary)
+		PrettyPrintJson(transactionGroup)
 	}
 }
