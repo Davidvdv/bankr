@@ -35,5 +35,5 @@ func (a *AnalyseCommand) Description() string {
 }
 
 func sanitiseTransactionDetails(details string) string {
-	return regexp.MustCompile("4835-.*-2708").ReplaceAllString(strings.TrimSuffix(details, " Df"), "")
+	return regexp.MustCompile("4835-.*-\\d{4}").ReplaceAllString(strings.TrimSuffix(details, " Df"), "")
 }
