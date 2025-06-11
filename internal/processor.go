@@ -25,7 +25,7 @@ func (p *TransactionProcessor) Process(transactions []*model.Transaction) {
 				return t.Amount
 			})),
 			NumberOfTransactions: len(transactions),
-			//Transactions: transactions,
+			Transactions:         transactions,
 		}
 		PrettyPrintJson(transactionGroup)
 	}

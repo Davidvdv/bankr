@@ -104,6 +104,6 @@ func readFile(filePath string, ch chan [][]string) {
 func printFileDetails(filePaths []string) {
 	fmt.Printf("=> Found %d CSV files\n", len(filePaths))
 	for _, filePath := range filePaths {
-		fmt.Println(filePath)
+		fmt.Println(" *", filePath)
 	}
 }
