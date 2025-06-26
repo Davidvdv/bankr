@@ -15,6 +15,7 @@ type AnalyseCommand struct {
 }
 
 func (a *AnalyseCommand) Execute(args []string) error {
+	fmt.Println("=> Analyze")
 	filePaths, err := a.directoryReader.Ls(args[0])
 	if err != nil {
 		return fmt.Errorf("error listing files: %v", err)
@@ -26,7 +27,6 @@ func (a *AnalyseCommand) Execute(args []string) error {
 		return strings.TrimSpace(sanitiseTransactionDetails(t.Details) + " " + strings.TrimSuffix(t.Code, " C"))
 	})
 	internal.PrettyPrintJson(descriptions)
-	//internal.PrettyPrintJson(classification.AnalyzeDescriptions(descriptions))
 	return nil
 }
 

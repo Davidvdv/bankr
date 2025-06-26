@@ -14,6 +14,7 @@ type ProcessCommand struct {
 }
 
 func (p *ProcessCommand) Execute(args []string) error {
+	fmt.Println("=> Process")
 	filePaths, err := p.directoryReader.Ls(args[0])
 	if err != nil {
 		return fmt.Errorf("error listing files: %v", err)
@@ -21,7 +22,8 @@ func (p *ProcessCommand) Execute(args []string) error {
 	linesOfFiles := p.fileReader.ReadLinesOfFiles(filePaths)
 	transactions := model.BuildTransactions(linesOfFiles)
 
-	p.transactionProcessor.Process(transactions)
+	transactionGroups := p.transactionProcessor.Process(transactions)
+	internal.PrettyPrintJson(transactionGroups)
 	return nil
 }
 

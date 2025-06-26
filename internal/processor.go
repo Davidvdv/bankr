@@ -6,17 +6,18 @@ import (
 )
 
 type Processor interface {
-	Process(transactions []*model.Transaction)
+	Process(transactions []*model.Transaction) []*model.TransactionGroup
 }
 
 type TransactionProcessor struct {
 }
 
-func (p *TransactionProcessor) Process(transactions []*model.Transaction) {
+func (p *TransactionProcessor) Process(transactions []*model.Transaction) []*model.TransactionGroup {
 	fmt.Println("=> Processing transactions...")
 	groupedTransactions := model.GroupBy(transactions, func(t *model.Transaction) string {
 		return t.Type
 	})
+	transactionGroups := make([]*model.TransactionGroup, 0, len(groupedTransactions))
 	for group, transactions := range groupedTransactions {
 		transactionGroup := &model.TransactionGroup{
 			Name: group,
@@ -27,6 +28,8 @@ func (p *TransactionProcessor) Process(transactions []*model.Transaction) {
 			NumberOfTransactions: len(transactions),
 			Transactions:         transactions,
 		}
-		PrettyPrintJson(transactionGroup)
+		transactionGroups = append(transactionGroups, transactionGroup)
 	}
+	fmt.Printf("=> Successfully processed %d transactions\n", len(transactions))
+	return transactionGroups
 }

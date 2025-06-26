@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bankr/internal"
 	"bankr/internal/classification"
 	"bankr/internal/io"
 	"bankr/internal/model"
@@ -11,9 +10,11 @@ import (
 type ClassifyCommand struct {
 	directoryReader io.DirectoryReader
 	fileReader      io.FileReader
+	classifier      classification.Classifier
 }
 
 func (c *ClassifyCommand) Execute(args []string) error {
+	fmt.Println("=> Classify")
 	filePaths, err := c.directoryReader.Ls(args[0])
 	if err != nil {
 		return fmt.Errorf("error listing files: %v", err)
@@ -25,20 +26,7 @@ func (c *ClassifyCommand) Execute(args []string) error {
 		return t.Details + t.Code
 	})
 
-	categorizer := classification.NewCategorizer()
-
-	// Add custom rule if needed
-	categorizer.AddCustomRule(classification.CategoryFood, `(?i)(my_local_restaurant)`)
-
-	// Categorize
-	classifiedTransactions := categorizer.ClassifyTransactions(descriptions, nil)
-
-	internal.PrettyPrintJson(classifiedTransactions)
-
-	// Find transactions that need manual review
-	needReview := classification.FindLowConfidenceTransactions(classifiedTransactions, 0.5)
-
-	internal.PrettyPrintJson(needReview)
+	c.classifier.Classify(descriptions)
 
 	return nil
 }

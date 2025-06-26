@@ -19,6 +19,7 @@ type LocalDirectoryReader struct {
 }
 
 func (l *LocalDirectoryReader) Ls(dirPath string) ([]string, error) {
+	fmt.Printf("=> Listing files in %s\n", dirPath)
 	absPath, err := filepath.Abs(dirPath)
 	if err != nil {
 		return nil, fmt.Errorf("error getting absolute path: %v", err)

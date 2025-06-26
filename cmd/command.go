@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bankr/internal"
+	"bankr/internal/classification"
 	"bankr/internal/io"
 	"fmt"
 )
@@ -66,6 +67,7 @@ func CreateCommand(name string) (Command, error) {
 		return &ClassifyCommand{
 			directoryReader: &io.LocalDirectoryReader{},
 			fileReader:      &io.CsvFileReader{},
+			classifier:      &classification.TransactionClassifier{},
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command name: %s", name)

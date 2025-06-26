@@ -13,6 +13,7 @@ type SummariseCommand struct {
 }
 
 func (s *SummariseCommand) Execute(args []string) error {
+	fmt.Println("=> Summarise")
 	filePaths, err := s.directoryReader.Ls(args[0])
 	if err != nil {
 		return fmt.Errorf("error listing files: %v", err)
